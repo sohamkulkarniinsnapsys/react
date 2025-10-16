@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+/* --- CSS variables (light + dark) --- */
+/* Define RGB values (not hex) so Tailwind alpha helpers work: rgb(var(--color) / <alpha-value>) */
+
+:root {
+  /* Light theme colors (RGB) */
+  --color-primary: 59 130 246;      /* blue-500 */
+  --color-background: 255 255 255;  /* white */
+  --color-surface: 249 250 251;     /* gray-50 */
+  --color-text: 17 24 39;           /* gray-900 */
+}
+
+/* When HTML has .dark, override variables to the dark theme */
+:root.dark,
+html.dark {
+  --color-primary: 96 165 250;      /* lighter blue or choose any */
+  --color-background: 15 23 42;     /* gray-900 */
+  --color-surface: 30 41 59;        /* gray-800 */
+  --color-text: 241 245 249;        /* gray-100 */
+}
+
+/* Small helper default transitions for nice switching */
+* {
+  transition-property: background-color, color, border-color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}

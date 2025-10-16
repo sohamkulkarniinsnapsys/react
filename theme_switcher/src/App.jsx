@@ -1,44 +1,63 @@
-
-import { useEffect, useState } from 'react'
-import './App.css'
+import React, { useEffect, useState, useMemo } from 'react'
 import { ThemeProvider } from './contexts/theme'
 import ThemeBtn from './components/ThemeBtn'
 import Card from './components/Card'
 
 function App() {
-  const [themeMode, setThemeMode] = useState("light")
+  // init from localStorage or fallback to 'light'
+  const [themeMode, setThemeMode] = useState(() => {
+    try {
+      return localStorage.getItem('theme') || 'light'
+    } catch {
+      return 'light'
+    }
+  })
 
-  const lightTheme = () => {
-    setThemeMode("light")
-  }
+  // convenience setters
+  const lightTheme = () => setThemeMode('light')
+  const darkTheme = () => setThemeMode('dark')
 
-  const darkTheme = () => {
-    setThemeMode("dark")
-  }
-
-  // actual change in theme
-
+  // apply to <html> and persist
   useEffect(() => {
-    document.querySelector('html').classList.remove("light", "dark")
-    document.querySelector('html').classList.add(themeMode)
+    const html = document.documentElement
+
+    // remove previous classes and add the one we want
+    html.classList.remove('light', 'dark')
+    html.classList.add(themeMode)
+
+    // also set color-scheme for UA form controls (so e.g. scrollbars, form controls adapt)
+    try {
+      html.style.colorScheme = themeMode === 'dark' ? 'dark' : 'light'
+    } catch {
+      // ignore on older browsers
+    }
+
+    try {
+      localStorage.setItem('theme', themeMode)
+    } catch {
+      // ignore write errors
+    }
   }, [themeMode])
-  
+
+  // memoized provider value to avoid unnecessary renders
+  const providerValue = useMemo(
+    () => ({ themeMode, lightTheme, darkTheme }),
+    [themeMode]
+  )
 
   return (
-    <ThemeProvider value={{themeMode, lightTheme, darkTheme}}>
-      <div className="flex flex-wrap min-h-screen items-center">
-          <div className="w-full">
-              <div className="w-full max-w-sm mx-auto flex justify-end mb-4">
-                  <ThemeBtn />
-              </div>
+    <ThemeProvider value={providerValue}>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-text px-4 py-12">
+        <div className="w-full max-w-2xl flex justify-end mb-6">
+          <ThemeBtn />
+        </div>
 
-              <div className="w-full max-w-sm mx-auto">
-                  <Card />
-              </div>
-          </div>
+        <div className="w-full max-w-md">
+          <Card />
+        </div>
       </div>
     </ThemeProvider>
   )
 }
 
-export default App  
+export default App
